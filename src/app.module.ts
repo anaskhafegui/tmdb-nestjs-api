@@ -1,14 +1,10 @@
 import { Module } from "@nestjs/common";
-
 import { ConfigModule } from "@nestjs/config";
-import configuration from "./common/config/configuration";
+import { TypeOrmModule } from "@nestjs/typeorm";
 import validationSchema from "./common/config/validation";
-import { CacheModule } from "./infrastructure/cache/cache.module";
-import { DatabaseModule } from "./infrastructure/typeorm/database.module";
 import { MoviesModule } from "./movie/movies.module";
+import { SyncTmdbModule } from "./sync-tmdb/sync-tmdb.module";
 import { TmdbModule } from "./tmdb/tmdb.module";
-
-console.log("DatabaseModule has been imported");
 
 @Module({
   imports: [
@@ -20,12 +16,20 @@ console.log("DatabaseModule has been imported");
       validationSchema,
     }),
     // Infrastructure
-    DatabaseModule,
-    // Cache module
-    CacheModule,
+    TypeOrmModule.forRoot({
+      type: "postgres",
+      host: process.env.POSTGRES_HOST,
+      port: parseInt(process.env.POSTGRES_PORT, 10),
+      username: process.env.POSTGRES_USER,
+      password: process.env.POSTGRES_PASSWORD,
+      database: process.env.POSTGRES_DB,
+      entities: [__dirname + "/**/*.entity{.ts,.js}"],
+      synchronize: process.env.NODE_ENV !== "production",
+    }),
     // Application modules
     TmdbModule,
     MoviesModule,
+    SyncTmdbModule,
   ],
 })
 export class AppModule {}
