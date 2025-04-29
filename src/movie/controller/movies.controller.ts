@@ -20,6 +20,7 @@ import { WrapperResponse } from "../../common/dtos/wrapper-response.dto";
 import { Movie } from "../../infrastructure/typeorm/entities/movie.entity";
 import { ListMoviesDto } from "../dto/list-movies.dto";
 import { MovieResponseDto } from "../dto/movie-response.dto";
+import { PaginationResponse } from "../interfaces/pagination.interface";
 import { MoviesService } from "../service/movies.service";
 
 @ApiTags("Movies")
@@ -32,7 +33,7 @@ export class MoviesController {
   @ApiOperation({
     summary: "List movies with pagination, search & filter",
     description:
-      "Returns a paginated list of movies. Supports searching by title and filtering by genre.",
+      "Returns a paginated list of movies with metadata. Supports searching by title and filtering by genre.",
   })
   @ApiResponse({
     status: 200,
@@ -43,34 +44,30 @@ export class MoviesController {
         {
           properties: {
             result: {
-              type: "array",
-              items: { $ref: getSchemaPath(MovieResponseDto) },
-              example: [
-                {
-                  id: 1,
-                  tmdbId: 550,
-                  title: "Fight Club",
-                  overview:
-                    "A depressed man suffering from insomnia meets a strange soap salesman...",
-                  posterPath: "/pB8BM7pdSp6B6Ih7QZ4DrQ3PmJK.jpg",
-                  releaseDate: "1999-10-15",
-                  avgRating: 8.4,
-                  createdAt: "2024-04-29T12:00:00.000Z",
-                  updatedAt: "2024-04-29T12:00:00.000Z",
-                  genres: [
-                    {
-                      id: 1,
-                      tmdbId: 18,
-                      name: "Drama",
-                    },
-                    {
-                      id: 2,
-                      tmdbId: 53,
-                      name: "Thriller",
-                    },
-                  ],
+              type: "object",
+              properties: {
+                data: {
+                  type: "array",
+                  items: { $ref: getSchemaPath(MovieResponseDto) },
                 },
-              ],
+                meta: {
+                  type: "object",
+                  properties: {
+                    total: { type: "number", example: 100 },
+                    page: { type: "number", example: 1 },
+                    limit: { type: "number", example: 20 },
+                    totalPages: { type: "number", example: 5 },
+                    hasNextPage: { type: "boolean", example: true },
+                    hasPreviousPage: { type: "boolean", example: false },
+                    nextPage: { type: "number", nullable: true, example: 2 },
+                    previousPage: {
+                      type: "number",
+                      nullable: true,
+                      example: null,
+                    },
+                  },
+                },
+              },
             },
           },
         },
@@ -110,7 +107,7 @@ export class MoviesController {
     description: "Search by movie title",
     example: "Matrix",
   })
-  findAll(@Query() dto: ListMoviesDto): Promise<Movie[]> {
+  findAll(@Query() dto: ListMoviesDto): Promise<PaginationResponse<Movie>> {
     return this.moviesService.findAll(dto);
   }
 
