@@ -1,9 +1,11 @@
+import { CacheInterceptor, CacheKey, CacheTTL } from "@nestjs/cache-manager";
 import {
   Controller,
   Get,
   Param,
   ParseIntPipe,
   Query,
+  UseInterceptors,
   UsePipes,
   ValidationPipe,
 } from "@nestjs/common";
@@ -25,10 +27,13 @@ import { MoviesService } from "../service/movies.service";
 @ApiTags("Movies")
 @ApiExtraModels(WrapperResponse, MovieResponseDto)
 @Controller("movies")
+@UseInterceptors(CacheInterceptor)
 export class MoviesController {
   constructor(private readonly moviesService: MoviesService) {}
 
   @Get()
+  @CacheKey("movies-list")
+  @CacheTTL(3600) // 1 hour cache
   @ApiOperation({
     summary: "List movies with pagination, search & filter",
     description:
@@ -115,6 +120,8 @@ export class MoviesController {
   }
 
   @Get(":id")
+  @CacheKey("movie-detail")
+  @CacheTTL(3600) // 1 hour cache
   @ApiOperation({
     summary: "Get a single movie by id",
     description: "Returns detailed information about a specific movie",
