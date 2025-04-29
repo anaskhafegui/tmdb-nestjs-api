@@ -7,13 +7,12 @@ import {
   Logger,
 } from "@nestjs/common";
 import { Request, Response } from "express";
+import { WrapperResponse } from "../dtos/wrapper-response.dto";
 
-interface ErrorResponse {
-  statusCode: number;
-  message: string;
+interface ExceptionResponse {
+  message?: string | string[];
   error?: string;
-  timestamp: string;
-  path: string;
+  statusCode?: number;
 }
 
 @Catch()
@@ -32,27 +31,28 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const exceptionResponse =
       exception instanceof HttpException ? exception.getResponse() : null;
 
-    const message =
-      typeof exceptionResponse === "string"
-        ? exceptionResponse
-        : (exceptionResponse as any)?.message || "Internal server error";
+    let message = "Internal server error";
+    let error: string | undefined;
 
-    const error =
-      typeof exceptionResponse === "object" && (exceptionResponse as any).error
-        ? (exceptionResponse as any).error
-        : undefined;
+    if (typeof exceptionResponse === "string") {
+      message = exceptionResponse;
+    } else if (exceptionResponse && typeof exceptionResponse === "object") {
+      const response = exceptionResponse as ExceptionResponse;
+      message = Array.isArray(response.message)
+        ? response.message[0]
+        : response.message || message;
+      error = response.error;
+    }
 
-    const responseBody: ErrorResponse = {
-      statusCode: status,
+    const responseBody = new WrapperResponse(
+      status,
       message,
-      error,
-      timestamp: new Date().toISOString(),
-      path: req.url,
-    };
+      error ? { error, details: message } : null
+    );
 
     this.logger.error(
-      `${req.method} ${req.url} >> Status ${status} >> Message: ${message}`,
-      (exception as any).stack
+      `HTTP Exception: ${status} - ${message}`,
+      exception instanceof Error ? exception.stack : undefined
     );
 
     res.status(status).json(responseBody);

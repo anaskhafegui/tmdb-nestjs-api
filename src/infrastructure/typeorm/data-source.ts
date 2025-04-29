@@ -1,26 +1,22 @@
-// src/infra/typeorm/data-source.ts
+import { ConfigService } from "@nestjs/config";
+import { config } from "dotenv";
 import { join } from "path";
-import { DataSource } from "typeorm";
-import { Genre } from "./entities/genre.entity";
-import { Movie } from "./entities/movie.entity";
-import { SyncErrorLog } from "./entities/sync-error-log.entity";
-import { SyncJob } from "./entities/sync-job.entity";
+import { DataSource, DataSourceOptions } from "typeorm";
+config();
+
+const configService = new ConfigService();
 
 export const AppDataSource = new DataSource({
   type: "postgres",
-  host: process.env.POSTGRES_HOST,
-  port: parseInt(process.env.POSTGRES_PORT, 10),
-  username: process.env.POSTGRES_USER,
-  password: process.env.POSTGRES_PASSWORD,
-  database: process.env.POSTGRES_DB,
-  synchronize: false, // Disable in production
-  entities: [
-    Movie,
-    Genre,
-    SyncJob,
-    SyncErrorLog,
-    // add other entities here
-  ],
-  migrations: [join(__dirname, "migrations/*.{ts,js}")],
+  host: configService.get<string>("POSTGRES_HOST"),
+  port: parseInt(configService.get<string>("POSTGRES_PORT") || "5432", 10),
+  username: configService.get<string>("POSTGRES_USER"),
+  password: configService.get<string>("POSTGRES_PASSWORD"),
+  database: configService.get<string>("POSTGRES_DB"),
+  synchronize: false, // Never true in production
   logging: true,
-});
+  entities: [join(__dirname, "entities/**/*.entity.{ts,js}")],
+  migrations: [join(__dirname, "migrations/**/*.{ts,js}")],
+  migrationsTableName: "migrations",
+  migrationsRun: false,
+} as DataSourceOptions);
