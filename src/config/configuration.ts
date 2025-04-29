@@ -1,5 +1,6 @@
 export default () => ({
   port: parseInt(process.env.PORT, 10) || 8080,
+  tmdbPath: process.env.TMDB_PATH,
   tmdbApiKey: process.env.TMDB_API_KEY,
   db: {
     host: process.env.POSTGRES_HOST,
