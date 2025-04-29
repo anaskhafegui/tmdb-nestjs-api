@@ -1,6 +1,7 @@
 import * as Joi from "joi";
 
 export default Joi.object({
+  TMDB_PATH: Joi.string().required(),
   TMDB_API_KEY: Joi.string().required(),
   POSTGRES_HOST: Joi.string().required(),
   POSTGRES_PORT: Joi.number().default(5432),
