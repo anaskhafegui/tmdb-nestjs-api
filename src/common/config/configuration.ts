@@ -1,3 +1,7 @@
+import * as dotenv from "dotenv";
+
+dotenv.config();
+
 export default () => ({
   port: parseInt(process.env.PORT, 10) || 8080,
   tmdbPath: process.env.TMDB_PATH,
