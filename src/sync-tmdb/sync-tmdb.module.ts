@@ -5,6 +5,7 @@ import { ConfigModule } from "@nestjs/config";
 import { ScheduleModule } from "@nestjs/schedule";
 import { TypeOrmModule } from "@nestjs/typeorm";
 
+import { RedisCacheModule } from "../infrastructure/cache/cache.module";
 import { DatabaseModule } from "../infrastructure/typeorm/database.module";
 import { Genre } from "../infrastructure/typeorm/entities/genre.entity";
 import { Movie } from "../infrastructure/typeorm/entities/movie.entity";
@@ -24,6 +25,7 @@ import { SyncTmdbService } from "./sync-tmdb.service";
     DatabaseModule,
     TmdbModule,
     TypeOrmModule.forFeature([Movie, Genre, SyncJob, SyncErrorLog]),
+    RedisCacheModule,
     BullModule.registerQueue({
       name: "tmdb-sync",
       limiter: {

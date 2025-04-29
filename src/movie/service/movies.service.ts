@@ -1,8 +1,9 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { CACHE_MANAGER } from "@nestjs/cache-manager";
+import { Inject, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
+import { Cache } from "cache-manager";
 import { Repository } from "typeorm";
 
-import { Genre } from "../../infrastructure/typeorm/entities/genre.entity";
 import { Movie } from "../../infrastructure/typeorm/entities/movie.entity";
 import { ListMoviesDto } from "../dto/list-movies.dto";
 
@@ -11,13 +12,19 @@ export class MoviesService {
   constructor(
     @InjectRepository(Movie)
     private readonly moviesRepo: Repository<Movie>,
-    @InjectRepository(Genre)
-    private readonly genresRepo: Repository<Genre>
+    @Inject(CACHE_MANAGER)
+    private readonly cacheManager: Cache
   ) {}
 
   async findAll(dto: ListMoviesDto): Promise<Movie[]> {
-    const { page = 1, limit = 20, search, genre } = dto;
+    const cacheKey = `movies:list:${JSON.stringify(dto)}`;
+    const cachedData = await this.cacheManager.get<Movie[]>(cacheKey);
 
+    if (cachedData) {
+      return cachedData;
+    }
+
+    const { page = 1, limit = 20, search, genre } = dto;
     const qb = this.moviesRepo
       .createQueryBuilder("movie")
       .leftJoinAndSelect("movie.genres", "genre");
@@ -29,21 +36,40 @@ export class MoviesService {
       qb.andWhere("genre.name = :genre", { genre });
     }
 
-    return qb
+    const movies = await qb
       .orderBy("movie.createdAt", "DESC")
       .skip((page - 1) * limit)
       .take(limit)
       .getMany();
+
+    await this.cacheManager.set(cacheKey, movies);
+    return movies;
   }
 
   async findOne(id: number): Promise<Movie> {
+    const cacheKey = `movies:${id}`;
+    const cachedMovie = await this.cacheManager.get<Movie>(cacheKey);
+
+    if (cachedMovie) {
+      return cachedMovie;
+    }
+
     try {
-      return await this.moviesRepo.findOneOrFail({
+      const movie = await this.moviesRepo.findOneOrFail({
         where: { id },
         relations: ["genres"],
       });
+      await this.cacheManager.set(cacheKey, movie);
+      return movie;
     } catch (error) {
       throw new NotFoundException(`Movie with ID ${id} not found`);
     }
+  }
+
+  // Add a method to clear cache when movies are updated
+  async clearCache(): Promise<void> {
+    // Clear all movie-related caches
+    await this.cacheManager.del("movies-list");
+    await this.cacheManager.del("movie-detail");
   }
 }

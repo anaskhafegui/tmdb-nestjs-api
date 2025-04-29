@@ -1,8 +1,10 @@
 import { InjectQueue } from "@nestjs/bull";
+import { CACHE_MANAGER } from "@nestjs/cache-manager";
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import { Cron } from "@nestjs/schedule";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Queue } from "bull";
+import { Cache } from "cache-manager";
 import { DataSource, Repository } from "typeorm";
 
 import { Genre } from "../infrastructure/typeorm/entities/genre.entity";
@@ -30,6 +32,8 @@ export class SyncTmdbService {
     private readonly genreRepo: Repository<Genre>,
     @InjectQueue("tmdb-sync")
     private readonly syncQueue: Queue,
+    @Inject(CACHE_MANAGER)
+    private readonly cacheManager: Cache,
     private readonly dataSource: DataSource
   ) {}
 
@@ -136,6 +140,9 @@ export class SyncTmdbService {
       job.lastErrorCode = null;
       await syncJobRepo.save(job);
 
+      // Clear the cache after successful batch processing
+      await this.clearCache();
+
       this.logger.log(
         `Completed processing pages ${batchStart} to ${batchEnd}`
       );
@@ -171,6 +178,17 @@ export class SyncTmdbService {
       await errorRepo.save(errorLog);
 
       throw err; // Re-throw to trigger job retry
+    }
+  }
+
+  private async clearCache(): Promise<void> {
+    try {
+      // Clear all movie-related caches
+      await this.cacheManager.del("movies-list");
+      await this.cacheManager.del("movie-detail");
+      this.logger.log("Successfully cleared movie caches");
+    } catch (error) {
+      this.logger.error("Failed to clear cache", error.stack || error);
     }
   }
 }
