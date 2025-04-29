@@ -1,28 +1,25 @@
+import { CacheModule } from "@nestjs/cache-manager";
 import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
-import { TypeOrmModule } from "@nestjs/typeorm";
-import configuration from "./config/configuration";
-import validationSchema from "./config/validation";
+import configuration from "./infrastructure/config/configuration";
+import validationSchema from "./infrastructure/config/validation";
+import { DatabaseModule } from "./infrastructure/typeorm/database.module";
 import { TmdbModule } from "./tmdb/tmdb.module";
 
-@Module({
+Module({
   imports: [
+    // Environment config
     ConfigModule.forRoot({
+      isGlobal: true,
       load: [configuration],
       validationSchema,
-      isGlobal: true,
     }),
-    TypeOrmModule.forRoot({
-      type: "postgres",
-      host: process.env.POSTGRES_HOST,
-      port: parseInt(process.env.POSTGRES_PORT, 10),
-      username: process.env.POSTGRES_USER,
-      password: process.env.POSTGRES_PASSWORD,
-      database: process.env.POSTGRES_DB,
-      autoLoadEntities: false,
-      synchronize: false, // Disable in production
-    }),
+    // Infrastructure
+    DatabaseModule,
+    // Cache module
+    CacheModule,
+    // Application modules
     TmdbModule,
   ],
-})
+});
 export class AppModule {}
