@@ -1,7 +1,10 @@
+import { BullModule } from "@nestjs/bull";
 import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 import { TypeOrmModule } from "@nestjs/typeorm";
+import configuration from "./common/config/configuration";
 import validationSchema from "./common/config/validation";
+import { TypeOrmConfigService } from "./infrastructure/typeorm/typeorm-config.service";
 import { MoviesModule } from "./movie/movies.module";
 import { SyncTmdbModule } from "./sync-tmdb/sync-tmdb.module";
 import { TmdbModule } from "./tmdb/tmdb.module";
@@ -16,15 +19,16 @@ import { TmdbModule } from "./tmdb/tmdb.module";
       validationSchema,
     }),
     // Infrastructure
-    TypeOrmModule.forRoot({
-      type: "postgres",
-      host: process.env.POSTGRES_HOST,
-      port: parseInt(process.env.POSTGRES_PORT, 10),
-      username: process.env.POSTGRES_USER,
-      password: process.env.POSTGRES_PASSWORD,
-      database: process.env.POSTGRES_DB,
-      entities: [__dirname + "/**/*.entity{.ts,.js}"],
-      synchronize: process.env.NODE_ENV !== "production",
+    TypeOrmModule.forRootAsync({
+      useClass: TypeOrmConfigService,
+    }),
+    BullModule.forRoot({
+      redis: {
+        host: process.env.REDIS_HOST || "localhost",
+        port: parseInt(process.env.REDIS_PORT || "6379", 10),
+        password: process.env.REDIS_PASSWORD,
+        db: parseInt(process.env.REDIS_DB || "0", 10),
+      },
     }),
     // Application modules
     TmdbModule,
