@@ -12,7 +12,6 @@ export class MoviesService {
   constructor(
     @InjectRepository(Movie)
     private readonly moviesRepo: Repository<Movie>,
-
     @Inject(CACHE_MANAGER)
     private readonly cacheManager: Cache
   ) {}
