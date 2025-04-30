@@ -23,7 +23,7 @@ import { WatchlistResponseDto } from "../dto/watchlist-response.dto";
 import { WatchlistService } from "../service/watchlist.service";
 
 @ApiTags("Watchlist")
-@Controller("movies")
+@Controller("watchlist")
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
 export class WatchlistController {
@@ -129,7 +129,7 @@ export class WatchlistController {
     );
   }
 
-  @Get("watchlist")
+  @Get("/watchlist")
   @ApiOperation({
     summary: "Get user's watchlist",
     description: "Retrieve all movies in the user's watchlist.",
@@ -150,7 +150,6 @@ export class WatchlistController {
     },
   })
   async getWatchlist(@GetUser() user: User): Promise<WatchlistResponseDto> {
-    console.log('Fetching watchlist for user ID:', user.id);
     const watchlist = await this.watchlistService.getWatchlist(user.id);
     return {
       statusCode: HttpStatus.OK,
