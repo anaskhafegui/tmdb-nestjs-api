@@ -2,10 +2,7 @@ import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { Watchlist } from "../../infrastructure/typeorm/entities/watchlist.entity";
-import { PaginatedResponseDto } from "../dto/paginated-response.dto";
-import { PaginationDto } from "../dto/pagination.dto";
 import { WatchlistDataDto } from "../dto/watchlist-data.dto";
-import { WatchlistDto } from "../dto/watchlist.dto";
 
 @Injectable()
 export class WatchlistService {
@@ -25,8 +22,7 @@ export class WatchlistService {
 
   async addToWatchlist(
     movieId: number,
-    userId: number,
-    watchlistDto: WatchlistDto
+    userId: number
   ): Promise<WatchlistDataDto> {
     const watchlist = this.watchlistRepository.create({
       movieId,
@@ -49,31 +45,12 @@ export class WatchlistService {
     }
   }
 
-  async getWatchlist(
-    userId: number,
-    paginationDto: PaginationDto
-  ): Promise<PaginatedResponseDto<WatchlistDataDto>> {
-    const { page, limit } = paginationDto;
-    const skip = (page - 1) * limit;
-
-    const [watchlist, total] = await this.watchlistRepository.findAndCount({
+  async getWatchlist(userId: number): Promise<WatchlistDataDto[]> {
+    const watchlist = await this.watchlistRepository.find({
       where: { userId },
       relations: ["movie"],
       order: { createdAt: "DESC" },
-      skip,
-      take: limit,
     });
-
-    const totalPages = Math.ceil(total / limit);
-
-    return {
-      statusCode: 200,
-      message: "Watchlist retrieved successfully",
-      data: watchlist.map((item) => this.toDto(item)),
-      page,
-      limit,
-      total,
-      totalPages,
-    };
+    return watchlist.map((item) => this.toDto(item));
   }
 }

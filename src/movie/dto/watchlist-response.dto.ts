@@ -16,9 +16,9 @@ export class WatchlistResponseDto {
 
   @ApiProperty({
     description: "The watchlist data",
-    type: WatchlistDataDto,
+    type: [WatchlistDataDto],
   })
-  data: WatchlistDataDto;
+  data: WatchlistDataDto[];
 }
 
 export class WatchlistListResponseDto {
