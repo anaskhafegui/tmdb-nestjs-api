@@ -2,11 +2,14 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from "typeorm";
+import { MovieRating } from "./movie-rating.entity";
+import { Watchlist } from "./watchlist.entity";
 
-@Entity()
+@Entity("user")
 export class User {
   @PrimaryGeneratedColumn()
   id: number;
@@ -26,9 +29,15 @@ export class User {
   @Column({ default: true })
   isActive: boolean;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ name: "created_at" })
   createdAt: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ name: "updated_at" })
   updatedAt: Date;
+
+  @OneToMany(() => MovieRating, (rating) => rating.user)
+  ratings: MovieRating[];
+
+  @OneToMany(() => Watchlist, (watchlist) => watchlist.user)
+  watchlist: Watchlist[];
 }
