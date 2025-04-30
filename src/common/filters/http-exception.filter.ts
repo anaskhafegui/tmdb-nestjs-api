@@ -28,6 +28,11 @@ export class HttpExceptionFilter implements ExceptionFilter {
         ? exception.getStatus()
         : HttpStatus.INTERNAL_SERVER_ERROR;
 
+    if (res.headersSent) {
+      this.logger.warn('Headers already sent, skipping response in HttpExceptionFilter.');
+      return;
+    }
+
     const exceptionResponse =
       exception instanceof HttpException ? exception.getResponse() : null;
 

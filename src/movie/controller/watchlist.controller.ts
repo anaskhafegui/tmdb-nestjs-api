@@ -129,7 +129,7 @@ export class WatchlistController {
     );
   }
 
-  @Get("/watchlist")
+  @Get()
   @ApiOperation({
     summary: "Get user's watchlist",
     description: "Retrieve all movies in the user's watchlist.",

@@ -1,7 +1,6 @@
 import { Injectable, NestMiddleware } from "@nestjs/common";
 import { NextFunction, Request, Response } from "express";
-import { sanitize } from "sanitize-html";
-import xss from "xss";
+const xss = require("xss");
 
 @Injectable()
 export class SanitizeMiddleware implements NestMiddleware {
@@ -25,14 +24,7 @@ export class SanitizeMiddleware implements NestMiddleware {
   }
 
   private sanitizeString(value: string): string {
-    // First use xss to prevent XSS attacks
-    let sanitized = xss(value);
-    // Then use sanitize-html to clean HTML content
-    sanitized = sanitize(sanitized, {
-      allowedTags: [], // No HTML tags allowed by default
-      allowedAttributes: {}, // No attributes allowed by default
-    });
-    return sanitized;
+    return xss(value); // Correct usage of xss
   }
 
   private sanitizeObject(obj: any): any {
