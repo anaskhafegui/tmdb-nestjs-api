@@ -25,6 +25,7 @@ import { WrapperResponse } from "../../common/dtos/wrapper-response.dto";
 import { Movie } from "../../infrastructure/typeorm/entities/movie.entity";
 import { ListMoviesDto } from "../dto/list-movies.dto";
 import { MovieResponseDto } from "../dto/movie-response.dto";
+import { PaginationResponse } from "../interfaces/pagination.interface";
 import { MoviesService } from "../service/movies.service";
 
 @ApiTags("Movies")
@@ -120,7 +121,7 @@ export class MoviesController {
     description: "Search by movie title",
     example: "Matrix",
   })
-  findAll(@Query() dto: ListMoviesDto): Promise<Movie[]> {
+  findAll(@Query() dto: ListMoviesDto): Promise<PaginationResponse<Movie>> {
     return this.moviesService.findAll(dto);
   }
 

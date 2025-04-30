@@ -6,6 +6,7 @@ import { Repository } from "typeorm";
 
 import { Movie } from "../../infrastructure/typeorm/entities/movie.entity";
 import { ListMoviesDto } from "../dto/list-movies.dto";
+import { PaginationResponse } from "../interfaces/pagination.interface";
 
 @Injectable()
 export class MoviesService {
@@ -16,15 +17,17 @@ export class MoviesService {
     private readonly cacheManager: Cache
   ) {}
 
-  async findAll(dto: ListMoviesDto): Promise<Movie[]> {
+  async findAll(dto: ListMoviesDto): Promise<PaginationResponse<Movie>> {
+    const { page = 1, limit = 20, search, genre } = dto;
     const cacheKey = `movies:list:${JSON.stringify(dto)}`;
-    const cachedData = await this.cacheManager.get<Movie[]>(cacheKey);
+    const cachedData = await this.cacheManager.get<PaginationResponse<Movie>>(
+      cacheKey
+    );
 
     if (cachedData) {
       return cachedData;
     }
 
-    const { page = 1, limit = 20, search, genre } = dto;
     const qb = this.moviesRepo
       .createQueryBuilder("movie")
       .leftJoinAndSelect("movie.genres", "genre");
@@ -36,14 +39,32 @@ export class MoviesService {
       qb.andWhere("genre.name = :genre", { genre });
     }
 
-    const movies = await qb
+    const [movies, total] = await qb
       .orderBy("movie.createdAt", "DESC")
       .skip((page - 1) * limit)
       .take(limit)
-      .getMany();
+      .getManyAndCount();
 
-    await this.cacheManager.set(cacheKey, movies);
-    return movies;
+    const totalPages = Math.ceil(total / limit);
+    const hasNextPage = page < totalPages;
+    const hasPreviousPage = page > 1;
+
+    const response: PaginationResponse<Movie> = {
+      data: movies,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages,
+        hasNextPage,
+        hasPreviousPage,
+        nextPage: hasNextPage ? page + 1 : null,
+        previousPage: hasPreviousPage ? page - 1 : null,
+      },
+    };
+
+    await this.cacheManager.set(cacheKey, response);
+    return response;
   }
 
   async findOne(id: number): Promise<Movie> {
