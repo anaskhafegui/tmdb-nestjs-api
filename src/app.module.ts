@@ -1,10 +1,15 @@
 import { BullModule } from "@nestjs/bull";
-import { Module } from "@nestjs/common";
+import { MiddlewareConsumer, Module, NestModule } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
+import { ThrottlerModule } from "@nestjs/throttler";
 import { TypeOrmModule } from "@nestjs/typeorm";
+import { AppController } from "./app.controller";
+import { AppService } from "./app.service";
 import { AuthModule } from "./auth/auth.module";
 import configuration from "./common/config/configuration";
 import validationSchema from "./common/config/validation";
+import { SanitizeMiddleware } from "./common/middleware/sanitize.middleware";
+import { SecurityMiddleware } from "./common/middleware/security.middleware";
 import { RedisCacheModule } from "./infrastructure/cache/cache.module";
 import { TypeOrmConfigService } from "./infrastructure/typeorm/typeorm-config.service";
 import { MoviesModule } from "./movie/movies.module";
@@ -16,7 +21,7 @@ import { TmdbModule } from "./tmdb/tmdb.module";
     // Environment config
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: ".env", // Explicitly specify the .env file path
+      envFilePath: [".env", ".env.development", ".env.production"],
       load: [configuration],
       validationSchema,
     }),
@@ -33,11 +38,23 @@ import { TmdbModule } from "./tmdb/tmdb.module";
         db: parseInt(process.env.REDIS_DB || "0", 10),
       },
     }),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60,
+        limit: 10,
+      },
+    ]),
     // Application modules
     AuthModule,
-    TmdbModule,
     MoviesModule,
+    TmdbModule,
     SyncTmdbModule,
   ],
+  controllers: [AppController],
+  providers: [AppService],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(SecurityMiddleware, SanitizeMiddleware).forRoutes("*");
+  }
+}

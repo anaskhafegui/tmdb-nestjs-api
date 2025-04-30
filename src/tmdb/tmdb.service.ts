@@ -16,7 +16,10 @@ export class TmdbService implements ITmdbClient {
     private readonly http: HttpService,
     private readonly config: ConfigService
   ) {
-    this.apiKey = this.config.get<string>("tmdbApiKey");
+    this.apiKey = this.config.get<string>("TMDB_API_KEY");
+    if (!this.apiKey) {
+      this.logger.warn("TMDB API key is not configured");
+    }
     this.tmdbPath = "https://api.themoviedb.org";
   }
 
