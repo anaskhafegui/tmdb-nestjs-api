@@ -5,10 +5,13 @@ import {
   Index,
   JoinTable,
   ManyToMany,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from "typeorm";
 import { Genre } from "./genre.entity";
+import { MovieRating } from "./movie-rating.entity";
+import { Watchlist } from "./watchlist.entity";
 
 @Entity({ name: "movies" })
 export class Movie {
@@ -29,7 +32,7 @@ export class Movie {
   posterPath?: string;
 
   @Column({ name: "release_date", type: "date", nullable: true })
-  releaseDate?: string;
+  releaseDate?: Date;
 
   @ManyToMany(() => Genre, (genre) => genre.movies, { cascade: true })
   @JoinTable({
@@ -47,4 +50,10 @@ export class Movie {
 
   @UpdateDateColumn({ name: "updated_at" })
   updatedAt: Date;
+
+  @OneToMany(() => MovieRating, (rating) => rating.movie)
+  ratings: MovieRating[];
+
+  @OneToMany(() => Watchlist, (watchlist) => watchlist.movie)
+  watchlistEntries: Watchlist[];
 }
