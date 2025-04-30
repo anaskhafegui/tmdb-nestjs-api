@@ -1,30 +1,25 @@
 // src/infra/cache/cache.module.ts
-import { CacheModule as NestCacheModule } from "@nestjs/cache-manager";
+import { CacheModule } from "@nestjs/cache-manager";
 import { Global, Module } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
-import { redisStore } from "cache-manager-redis-store";
-import { RedisClientProvider } from "./redis.provider";
+import * as redisStore from "cache-manager-redis-store";
 
 @Global()
 @Module({
   imports: [
-    ConfigModule,
-    NestCacheModule.registerAsync({
+    CacheModule.registerAsync({
       imports: [ConfigModule],
-      useFactory: async (config: ConfigService) => ({
-        store: await redisStore({
-          socket: {
-            host: config.get<string>("redis.host"),
-            port: config.get<number>("redis.port"),
-          },
-          ttl: config.get<number>("cache.ttl") || 3600,
-        }),
+      useFactory: async (configService: ConfigService) => ({
+        store: redisStore,
+        host: configService.get("REDIS_HOST", "localhost"),
+        port: configService.get("REDIS_PORT", 6379),
+        password: configService.get("REDIS_PASSWORD"),
+        ttl: 60 * 60 * 24, // 24 hours
+        max: 100, // maximum number of items in cache
       }),
       inject: [ConfigService],
-      isGlobal: true,
     }),
   ],
-  providers: [RedisClientProvider],
-  exports: [NestCacheModule, "REDIS_CLIENT"],
+  exports: [CacheModule],
 })
-export class CacheModule {}
+export class RedisCacheModule {}

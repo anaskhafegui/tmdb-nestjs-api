@@ -1,13 +1,18 @@
+import { CacheInterceptor, CacheKey, CacheTTL } from "@nestjs/cache-manager";
 import {
   Controller,
   Get,
   Param,
   ParseIntPipe,
   Query,
+  UseGuards,
+  UseInterceptors,
   UsePipes,
   ValidationPipe,
 } from "@nestjs/common";
+import { AuthGuard } from "@nestjs/passport";
 import {
+  ApiBearerAuth,
   ApiExtraModels,
   ApiOperation,
   ApiParam,
@@ -25,11 +30,16 @@ import { MoviesService } from "../service/movies.service";
 
 @ApiTags("Movies")
 @ApiExtraModels(WrapperResponse, MovieResponseDto)
+@ApiBearerAuth()
+@UseGuards(AuthGuard("jwt"))
 @Controller("movies")
+@UseInterceptors(CacheInterceptor)
 export class MoviesController {
   constructor(private readonly moviesService: MoviesService) {}
 
   @Get()
+  @CacheKey("movies-list")
+  @CacheTTL(3600) // 1 hour cache
   @ApiOperation({
     summary: "List movies with pagination, search & filter",
     description:
@@ -78,6 +88,10 @@ export class MoviesController {
     status: 400,
     description: "Bad request - Invalid query parameters",
   })
+  @ApiResponse({
+    status: 401,
+    description: "Unauthorized - Invalid or missing JWT token",
+  })
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
   @ApiQuery({
     name: "page",
@@ -112,6 +126,8 @@ export class MoviesController {
   }
 
   @Get(":id")
+  @CacheKey("movie-detail")
+  @CacheTTL(3600) // 1 hour cache
   @ApiOperation({
     summary: "Get a single movie by id",
     description: "Returns detailed information about a specific movie",
@@ -126,35 +142,15 @@ export class MoviesController {
           properties: {
             result: {
               $ref: getSchemaPath(MovieResponseDto),
-              example: {
-                id: 1,
-                tmdbId: 550,
-                title: "Fight Club",
-                overview:
-                  "A depressed man suffering from insomnia meets a strange soap salesman...",
-                posterPath: "/pB8BM7pdSp6B6Ih7QZ4DrQ3PmJK.jpg",
-                releaseDate: "1999-10-15",
-                avgRating: 8.4,
-                createdAt: "2024-04-29T12:00:00.000Z",
-                updatedAt: "2024-04-29T12:00:00.000Z",
-                genres: [
-                  {
-                    id: 1,
-                    tmdbId: 18,
-                    name: "Drama",
-                  },
-                  {
-                    id: 2,
-                    tmdbId: 53,
-                    name: "Thriller",
-                  },
-                ],
-              },
             },
           },
         },
       ],
     },
+  })
+  @ApiResponse({
+    status: 401,
+    description: "Unauthorized - Invalid or missing JWT token",
   })
   @ApiResponse({
     status: 404,

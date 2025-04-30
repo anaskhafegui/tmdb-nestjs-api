@@ -2,8 +2,10 @@ import { BullModule } from "@nestjs/bull";
 import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 import { TypeOrmModule } from "@nestjs/typeorm";
+import { AuthModule } from "./auth/auth.module";
 import configuration from "./common/config/configuration";
 import validationSchema from "./common/config/validation";
+import { RedisCacheModule } from "./infrastructure/cache/cache.module";
 import { TypeOrmConfigService } from "./infrastructure/typeorm/typeorm-config.service";
 import { MoviesModule } from "./movie/movies.module";
 import { SyncTmdbModule } from "./sync-tmdb/sync-tmdb.module";
@@ -22,6 +24,7 @@ import { TmdbModule } from "./tmdb/tmdb.module";
     TypeOrmModule.forRootAsync({
       useClass: TypeOrmConfigService,
     }),
+    RedisCacheModule,
     BullModule.forRoot({
       redis: {
         host: process.env.REDIS_HOST || "localhost",
@@ -31,6 +34,7 @@ import { TmdbModule } from "./tmdb/tmdb.module";
       },
     }),
     // Application modules
+    AuthModule,
     TmdbModule,
     MoviesModule,
     SyncTmdbModule,
