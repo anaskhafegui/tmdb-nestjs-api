@@ -1,5 +1,5 @@
 import { BullModule } from "@nestjs/bull";
-import { MiddlewareConsumer, Module, NestModule } from "@nestjs/common";
+import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 import { ThrottlerModule } from "@nestjs/throttler";
 import { TypeOrmModule } from "@nestjs/typeorm";
@@ -8,8 +8,6 @@ import { AppService } from "./app.service";
 import { AuthModule } from "./auth/auth.module";
 import configuration from "./common/config/configuration";
 import validationSchema from "./common/config/validation";
-import { SanitizeMiddleware } from "./common/middleware/sanitize.middleware";
-import { SecurityMiddleware } from "./common/middleware/security.middleware";
 import { RedisCacheModule } from "./infrastructure/cache/cache.module";
 import { TypeOrmConfigService } from "./infrastructure/typeorm/typeorm-config.service";
 import { MoviesModule } from "./movie/movies.module";
@@ -53,8 +51,4 @@ import { TmdbModule } from "./tmdb/tmdb.module";
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer.apply(SecurityMiddleware, SanitizeMiddleware).forRoutes("*");
-  }
-}
+export class AppModule {}
