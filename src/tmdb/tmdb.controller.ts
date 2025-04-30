@@ -3,45 +3,128 @@ import {
   Controller,
   Get,
   Query,
+  UseGuards,
   UsePipes,
   ValidationPipe,
 } from "@nestjs/common";
+import { AuthGuard } from "@nestjs/passport";
 import {
-  ApiOkResponse,
+  ApiBearerAuth,
+  ApiExtraModels,
   ApiOperation,
   ApiQuery,
+  ApiResponse,
   ApiTags,
+  getSchemaPath,
 } from "@nestjs/swagger";
-import { GenreDto } from "./dto/genre.dto";
+import { WrapperResponse } from "../common/dtos/wrapper-response.dto";
 import { GetPopularDto } from "./dto/get-popular.dto";
-import { MovieDto } from "./dto/movie.dto";
 import { TmdbService } from "./tmdb.service";
+
 @ApiTags("TMDB")
+@ApiExtraModels(WrapperResponse)
+@ApiBearerAuth()
+@UseGuards(AuthGuard("jwt"))
 @Controller("tmdb")
 export class TmdbController {
-  constructor(private readonly tmdb: TmdbService) {}
+  constructor(private readonly tmdbService: TmdbService) {}
 
   @Get("popular")
-  @ApiOperation({ summary: "Fetch popular movies from TMDB" })
-  @ApiOkResponse({
-    description: "List of popular movies",
-    type: MovieDto,
-    isArray: true,
+  @ApiOperation({
+    summary: "Get popular movies from TMDB",
+    description: "Returns a list of popular movies from The Movie Database API",
   })
-  @ApiQuery({ name: "page", required: false, type: Number, example: 1 })
+  @ApiResponse({
+    status: 200,
+    description: "Successfully retrieved popular movies",
+    schema: {
+      allOf: [
+        { $ref: getSchemaPath(WrapperResponse) },
+        {
+          properties: {
+            result: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  id: { type: "number", example: 550 },
+                  title: { type: "string", example: "Fight Club" },
+                  overview: { type: "string" },
+                  poster_path: {
+                    type: "string",
+                    example: "/pB8BM7pdSp6B6Ih7QZ4DrQ3PmJK.jpg",
+                  },
+                  release_date: { type: "string", example: "1999-10-15" },
+                  vote_average: { type: "number", example: 8.4 },
+                },
+              },
+            },
+          },
+        },
+      ],
+    },
+  })
+  @ApiResponse({
+    status: 400,
+    description: "Bad request - Invalid query parameters",
+  })
+  @ApiResponse({
+    status: 401,
+    description: "Unauthorized - Invalid or missing JWT token",
+  })
+  @ApiResponse({
+    status: 429,
+    description: "Too Many Requests - Rate limit exceeded",
+  })
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
-  async getPopular(@Query() dto: GetPopularDto): Promise<MovieDto[]> {
-    return this.tmdb.fetchPopular(dto.page);
+  @ApiQuery({
+    name: "page",
+    required: false,
+    type: Number,
+    description: "Page number (default: 1)",
+    example: 1,
+  })
+  getPopularMovies(@Query() dto: GetPopularDto) {
+    return this.tmdbService.fetchPopular(dto.page);
   }
 
   @Get("genres")
-  @ApiOperation({ summary: "Fetch movie genres from TMDB" })
-  @ApiOkResponse({
-    description: "List of movie genres",
-    type: GenreDto,
-    isArray: true,
+  @ApiOperation({
+    summary: "Get movie genres from TMDB",
+    description: "Returns a list of movie genres from The Movie Database API",
   })
-  async getGenres(): Promise<GenreDto[]> {
-    return this.tmdb.fetchGenres();
+  @ApiResponse({
+    status: 200,
+    description: "Successfully retrieved movie genres",
+    schema: {
+      allOf: [
+        { $ref: getSchemaPath(WrapperResponse) },
+        {
+          properties: {
+            result: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  id: { type: "number", example: 28 },
+                  name: { type: "string", example: "Action" },
+                },
+              },
+            },
+          },
+        },
+      ],
+    },
+  })
+  @ApiResponse({
+    status: 401,
+    description: "Unauthorized - Invalid or missing JWT token",
+  })
+  @ApiResponse({
+    status: 429,
+    description: "Too Many Requests - Rate limit exceeded",
+  })
+  getGenres() {
+    return this.tmdbService.fetchGenres();
   }
 }

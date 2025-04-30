@@ -2,6 +2,7 @@ import { BullModule } from "@nestjs/bull";
 import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 import { TypeOrmModule } from "@nestjs/typeorm";
+import { AuthModule } from "./auth/auth.module";
 import configuration from "./common/config/configuration";
 import validationSchema from "./common/config/validation";
 import { RedisCacheModule } from "./infrastructure/cache/cache.module";
@@ -33,6 +34,7 @@ import { TmdbModule } from "./tmdb/tmdb.module";
       },
     }),
     // Application modules
+    AuthModule,
     TmdbModule,
     MoviesModule,
     SyncTmdbModule,
