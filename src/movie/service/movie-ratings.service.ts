@@ -81,9 +81,7 @@ export class MovieRatingsService {
       .where("rating.movieId = :movieId", { movieId })
       .getRawOne();
 
-    await this.movieRepo.update(
-      { id: movieId },
-      { avgRating: result.avgRating || 0 }
-    );
+    const avgRating = result?.avgRating ? parseFloat(result.avgRating) : 0;
+    await this.movieRepo.update({ id: movieId }, { avgRating });
   }
 }

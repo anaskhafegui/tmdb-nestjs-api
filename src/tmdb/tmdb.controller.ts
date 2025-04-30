@@ -84,8 +84,9 @@ export class TmdbController {
     description: "Page number (default: 1)",
     example: 1,
   })
-  getPopularMovies(@Query() dto: GetPopularDto) {
-    return this.tmdbService.fetchPopular(dto.page);
+  async getPopularMovies(@Query() dto: GetPopularDto) {
+    const movies = await this.tmdbService.fetchPopular(dto.page);
+    return new WrapperResponse(200, "Success", movies);
   }
 
   @Get("genres")
@@ -124,7 +125,8 @@ export class TmdbController {
     status: 429,
     description: "Too Many Requests - Rate limit exceeded",
   })
-  getGenres() {
-    return this.tmdbService.fetchGenres();
+  async getGenres() {
+    const genres = await this.tmdbService.fetchGenres();
+    return new WrapperResponse(200, "Success", genres);
   }
 }
