@@ -29,10 +29,10 @@ export class User {
   @Column({ default: true })
   isActive: boolean;
 
-  @CreateDateColumn({ name: "created_at" })
+  @CreateDateColumn({ name: "createdAt" })
   createdAt: Date;
 
-  @UpdateDateColumn({ name: "updated_at" })
+  @UpdateDateColumn({ name: "updatedAt" })
   updatedAt: Date;
 
   @OneToMany(() => MovieRating, (rating) => rating.user)
