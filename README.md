@@ -123,7 +123,7 @@ THROTTLE_LIMIT=10
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/tmdb-nestjs-api.git
+git clone https://github.com/anaskhafegui/tmdb-nestjs-api.git
 cd tmdb-nestjs-api
 ```
 
@@ -140,6 +140,11 @@ npm run start:dev
 Or using Docker:
 ```bash
 docker-compose up -d
+```
+
+Run migration:
+```bash
+npm run migration:run
 ```
 
 ## 🧪 Development & Testing
