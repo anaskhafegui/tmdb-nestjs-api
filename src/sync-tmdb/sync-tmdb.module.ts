@@ -1,6 +1,3 @@
-<<<<<<< HEAD
- 
-=======
 import { HttpModule } from "@nestjs/axios";
 import { BullModule } from "@nestjs/bull";
 import { Module } from "@nestjs/common";
@@ -58,4 +55,3 @@ import { SyncTmdbService } from "./sync-tmdb.service";
   exports: [SyncTmdbService],
 })
 export class SyncTmdbModule {}
->>>>>>> 12ca51914b08e4753f1ed39857019a15949c4170

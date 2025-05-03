@@ -1,6 +1,3 @@
-<<<<<<< HEAD
- 
-=======
 import { Process, Processor } from "@nestjs/bull";
 import { Logger } from "@nestjs/common";
 import { Job } from "bull";
@@ -30,4 +27,3 @@ export class SyncTmdbProcessor {
     }
   }
 }
->>>>>>> 12ca51914b08e4753f1ed39857019a15949c4170

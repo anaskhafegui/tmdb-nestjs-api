@@ -24,6 +24,15 @@ export class WatchlistService {
     movieId: number,
     userId: number
   ): Promise<WatchlistDataDto> {
+    const existingWatchlist = await this.watchlistRepository.findOne({
+      where: { movieId, userId },
+    });
+
+    if (existingWatchlist) {
+      throw new NotFoundException(
+        `Movie ${movieId} is already in watchlist for user ${userId}`
+      );
+    }
     const watchlist = this.watchlistRepository.create({
       movieId,
       userId,

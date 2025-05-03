@@ -21,12 +21,8 @@
         "@nestjs/common": "^10.0.0",
         "@nestjs/config": "^3.1.1",
         "@nestjs/core": "^10.0.0",
-<<<<<<< HEAD
-        "@nestjs/platform-express": "^11.1.0",
-=======
         "@nestjs/platform-express": "^10.0.0",
-        "@nestjs/schedule": "^6.0.0",
->>>>>>> 12ca51914b08e4753f1ed39857019a15949c4170
+        "@nestjs/schedule": "^3.0.4",
         "@nestjs/swagger": "^7.2.0",
         "@nestjs/throttler": "^6.4.0",
         "@nestjs/typeorm": "^10.0.0",
