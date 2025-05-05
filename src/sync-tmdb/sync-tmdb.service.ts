@@ -21,7 +21,7 @@ import { ITmdbClient } from "../tmdb/interfaces/itmdb-client.interface";
 export class SyncTmdbService {
   private readonly logger = new Logger(SyncTmdbService.name);
   private readonly BATCH_SIZE = 5; // Number of pages to process in parallel
-  private readonly MOVIE_BATCH_SIZE = 50; // Number of movies to process in a single transaction
+  private readonly MOVIE_BATCH_SIZE = 20; // Number of movies to process in a single transaction
 
   constructor(
     @Inject("ITmdbClient")
@@ -54,7 +54,7 @@ export class SyncTmdbService {
       this.logger.error("Failed to sync genres", err.stack || err);
     }
 
-    const TOTAL_PAGES = 500;
+    const TOTAL_PAGES = 100;
     const startPage = job.lastPageSynced + 1;
 
     // Add jobs to queue

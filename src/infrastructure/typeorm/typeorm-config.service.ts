@@ -12,7 +12,12 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
       password: process.env.POSTGRES_PASSWORD,
       database: process.env.POSTGRES_DB,
       entities: [__dirname + "/**/*.entity{.ts,.js}"],
-      synchronize: process.env.NODE_ENV !== "production",
+      migrations: [__dirname, "migrations/**/*.{ts,js}"],
+      synchronize: false, // Set to false in production
+      logging: true,
+      migrationsTableName: "migrations",
+      migrationsRun: true,
+      //synchronize: process.env.NODE_ENV !== "production",
     };
   }
 }

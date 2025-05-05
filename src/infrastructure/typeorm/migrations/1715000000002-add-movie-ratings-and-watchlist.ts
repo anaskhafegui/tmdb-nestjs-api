@@ -1,9 +1,9 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class AddMovieRatingsAndWatchlist1715000000001
+export class AddMovieRatingsAndWatchlist1715000000002
   implements MigrationInterface
 {
-  name = "AddMovieRatingsAndWatchlist1715000000001";
+  name = "AddMovieRatingsAndWatchlist1715000000002";
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Create movie_ratings table
