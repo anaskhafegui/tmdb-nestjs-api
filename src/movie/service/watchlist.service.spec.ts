@@ -164,4 +164,16 @@ describe("WatchlistService", () => {
       expect(result.length).toBe(0);
     });
   });
+
+  describe("toDto", () => {
+    it("should convert Watchlist entity to WatchlistDataDto", () => {
+      const dto = service["toDto"](mockWatchlist);
+
+      expect(dto).toBeInstanceOf(WatchlistDataDto);
+      expect(dto.id).toBe(mockWatchlist.id);
+      expect(dto.createdAt).toBe(mockWatchlist.createdAt);
+      expect(dto.updatedAt).toBe(mockWatchlist.updatedAt);
+      expect(dto.movie).toBe(mockWatchlist.movie);
+    });
+  });
 });

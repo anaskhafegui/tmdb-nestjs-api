@@ -10,31 +10,37 @@ import {
 import { Movie } from "./movie.entity";
 import { User } from "./user.entity";
 
-@Entity("watchlist")
+@Entity()
 export class Watchlist {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ name: "is_favorite", default: false })
-  isFavorite: boolean;
-
-  @CreateDateColumn({ name: "created_at" })
-  createdAt: Date;
-
-  @UpdateDateColumn({ name: "updated_at" })
-  updatedAt: Date;
-
-  @Column({ name: "user_id" })
-  userId: number;
-
-  @Column({ name: "movie_id" })
+  @Column()
   movieId: number;
 
-  @ManyToOne(() => User, (user) => user.watchlist)
-  @JoinColumn({ name: "user_id" })
-  user: User;
+  @Column()
+  userId: number;
+
+  @Column({ default: false })
+  isFavorite: boolean;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 
   @ManyToOne(() => Movie, (movie) => movie.watchlistEntries)
-  @JoinColumn({ name: "movie_id" })
+  @JoinColumn({ name: "movieId" })
   movie: Movie;
+
+  @ManyToOne(() => User, (user) => user.watchlist)
+  @JoinColumn({ name: "userId" })
+  user: User;
+
+  constructor() {
+    this.createdAt = new Date();
+    this.updatedAt = new Date();
+    this.isFavorite = false;
+  }
 }

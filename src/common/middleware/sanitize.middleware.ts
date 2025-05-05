@@ -36,6 +36,19 @@ export class SanitizeMiddleware implements NestMiddleware {
   }
 
   private sanitizeObject(obj: any): any {
+    // Handle arrays
+    if (Array.isArray(obj)) {
+      return obj.map((item) => {
+        if (typeof item === "string") {
+          return this.sanitizeString(item);
+        } else if (typeof item === "object" && item !== null) {
+          return this.sanitizeObject(item);
+        }
+        return item;
+      });
+    }
+
+    // Handle regular objects
     const sanitized: any = {};
     for (const key in obj) {
       if (typeof obj[key] === "string") {
