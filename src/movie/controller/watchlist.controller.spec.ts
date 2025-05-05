@@ -82,6 +82,16 @@ describe("WatchlistController", () => {
       expect(result.message).toBe("Movie added to watchlist successfully");
       expect(result.data).toEqual([mockWatchlistData]);
     });
+
+    it("should handle errors from service", async () => {
+      const movieId = "1";
+      const error = new Error("Test error");
+      mockWatchlistService.addToWatchlist.mockRejectedValue(error);
+
+      await expect(
+        controller.addToWatchlist(movieId, mockUser)
+      ).rejects.toThrow(error);
+    });
   });
 
   describe("removeFromWatchlist", () => {
@@ -95,6 +105,16 @@ describe("WatchlistController", () => {
         parseInt(movieId, 10),
         mockUser.id
       );
+    });
+
+    it("should handle errors from service", async () => {
+      const movieId = "1";
+      const error = new Error("Test error");
+      mockWatchlistService.removeFromWatchlist.mockRejectedValue(error);
+
+      await expect(
+        controller.removeFromWatchlist(movieId, mockUser)
+      ).rejects.toThrow(error);
     });
   });
 
@@ -123,6 +143,13 @@ describe("WatchlistController", () => {
       expect(result.statusCode).toBe(HttpStatus.OK);
       expect(result.message).toBe("Watchlist retrieved successfully");
       expect(result.data).toEqual([]);
+    });
+
+    it("should handle errors from service", async () => {
+      const error = new Error("Test error");
+      mockWatchlistService.getWatchlist.mockRejectedValue(error);
+
+      await expect(controller.getWatchlist(mockUser)).rejects.toThrow(error);
     });
   });
 });
