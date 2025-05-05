@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { Watchlist } from "../../infrastructure/typeorm/entities/watchlist.entity";
@@ -29,10 +33,11 @@ export class WatchlistService {
     });
 
     if (existingWatchlist) {
-      throw new NotFoundException(
+      throw new ConflictException(
         `Movie ${movieId} is already in watchlist for user ${userId}`
       );
     }
+
     const watchlist = this.watchlistRepository.create({
       movieId,
       userId,

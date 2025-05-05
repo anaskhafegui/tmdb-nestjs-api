@@ -29,7 +29,7 @@ import { WatchlistService } from "../service/watchlist.service";
 export class WatchlistController {
   constructor(private readonly watchlistService: WatchlistService) {}
 
-  @Post(":id/watchlist")
+  @Post(":id")
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     summary: "Add movie to watchlist",
@@ -82,7 +82,7 @@ export class WatchlistController {
     };
   }
 
-  @Delete(":id/watchlist")
+  @Delete(":id")
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     summary: "Remove movie from watchlist",
@@ -129,7 +129,7 @@ export class WatchlistController {
     );
   }
 
-  @Get("/watchlist")
+  @Get()
   @ApiOperation({
     summary: "Get user's watchlist",
     description: "Retrieve all movies in the user's watchlist.",

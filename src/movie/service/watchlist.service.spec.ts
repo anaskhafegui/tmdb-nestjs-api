@@ -1,4 +1,4 @@
-import { NotFoundException } from "@nestjs/common";
+import { ConflictException, NotFoundException } from "@nestjs/common";
 import { Test, TestingModule } from "@nestjs/testing";
 import { getRepositoryToken } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
@@ -65,15 +65,24 @@ describe("WatchlistService", () => {
 
   describe("addToWatchlist", () => {
     it("should add a movie to watchlist and return WatchlistDataDto", async () => {
-      const movieId = 1;
+      const movieId = 10;
       const userId = 1;
+
+      mockWatchlistRepository.findOne.mockImplementationOnce(() =>
+        Promise.resolve(null)
+      );
+      mockWatchlistRepository.findOne.mockImplementationOnce(() =>
+        Promise.resolve(mockWatchlist)
+      );
 
       mockWatchlistRepository.create.mockReturnValue(mockWatchlist);
       mockWatchlistRepository.save.mockResolvedValue(mockWatchlist);
-      mockWatchlistRepository.findOne.mockResolvedValue(mockWatchlist);
 
       const result = await service.addToWatchlist(movieId, userId);
 
+      expect(mockWatchlistRepository.findOne).toHaveBeenCalledWith({
+        where: { movieId, userId },
+      });
       expect(mockWatchlistRepository.create).toHaveBeenCalledWith({
         movieId,
         userId,
@@ -85,6 +94,17 @@ describe("WatchlistService", () => {
       });
       expect(result).toBeInstanceOf(WatchlistDataDto);
       expect(result.id).toBe(mockWatchlist.id);
+    });
+
+    it("should throw ConflictException when movie is already in watchlist", async () => {
+      const movieId = 1;
+      const userId = 1;
+
+      mockWatchlistRepository.findOne.mockResolvedValue(mockWatchlist);
+
+      await expect(service.addToWatchlist(movieId, userId)).rejects.toThrow(
+        ConflictException
+      );
     });
   });
 
